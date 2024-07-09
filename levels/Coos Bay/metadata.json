@@ -1,0 +1,10 @@
+{
+    "name": "Coos Bay",
+    "id": "Coos Bay",
+    "centerPoint": [
+        43.37763601918639,
+        -124.23295703943884
+    ],
+    "boundHeight": 0.1,
+    "hasBeenProcessed": false
+}

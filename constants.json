@@ -1,0 +1,22 @@
+{
+    "constants":{
+        "soil_type_mapping": {
+            "Alfisols": 0.95,
+            "Andisols": 0.9,
+            "Aridisols": 0.8,
+            "Entisols": 0.75,
+            "Gelisols": 0.65,
+            "Histosols": 0.6,
+            "Inceptisols": 0.5,
+            "Mollisols": 0.45,
+            "Oxisols": 0.35,
+            "Spodosols": 0.25,
+            "Ultisols": 0.2,
+            "Vertisols": 0.1,
+            "Unknown": 0,
+            "None": 0
+        }
+    }
+}
+
+

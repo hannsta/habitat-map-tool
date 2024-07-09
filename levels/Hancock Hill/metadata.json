@@ -1,0 +1,10 @@
+{
+    "name": "Hancock Hill",
+    "id": "Hancock Hill",
+    "centerPoint": [
+        43.63555,
+        -123.564
+    ],
+    "boundHeight": 0.1,
+    "hasBeenProcessed": false
+}

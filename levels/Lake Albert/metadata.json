@@ -1,0 +1,10 @@
+{
+    "name": "Lake Albert",
+    "id": "Lake Albert",
+    "centerPoint": [
+        42.581190572412105,
+        -120.24253913909779
+    ],
+    "boundHeight": 0.1,
+    "hasBeenProcessed": false
+}

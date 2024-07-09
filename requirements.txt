@@ -1,0 +1,8 @@
+geopandas
+matplotlib
+numpy
+pandas
+flask
+rasterio
+shapely
+flask_cors
