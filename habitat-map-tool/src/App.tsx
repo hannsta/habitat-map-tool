@@ -3,25 +3,35 @@ import logo from './logo.svg';
 import './App.css';
 import { HiLockClosed, HiLockOpen } from 'react-icons/hi';
 import { LatLngBoundsExpression, LatLngExpression, LatLngTuple } from 'leaflet';
-import { MapContainer, TileLayer, Marker, Popup, Rectangle, useMapEvents } from 'react-leaflet';
+import { GeoJSON, MapContainer, TileLayer, Marker, Popup, Rectangle, useMapEvents } from 'react-leaflet';
 import markerIconPng from "leaflet/dist/images/marker-icon.png"
 import {Icon} from 'leaflet'
 
+//import bad_data.geojson from './bad_data.geojson'
+//@ts-ignore
+import bad_data from './bad_data.json'
+import LevelList from './LevelList';
+import LevelConfig from './LevelConfig';
+
 const BASE_URL = 'http://127.0.0.1:5000/'
 
-
-interface HabitatMapLevel {
+export interface HabitatMapLevel {
   name: string;
   id: string;
   centerPoint: number[];
   boundHeight: number;
   hasBeenProcessed: boolean;
 }
-
+const baseMapsURLs = {
+    'OpenStreetMap': 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    'OpenTopoMap': 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+    'Esri World Imagery': 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    'Satellite': 'https://tiles.stadiamaps.com/tiles/alidade_satellite/{z}/{x}/{y}{r}.jpg'
+}
 
 function App() {
   const [moveBox, setMoveBox] = useState<boolean>(true);
-
+  const [baseMap, setBaseMap] = useState<string>('OpenStreetMap' as keyof typeof baseMapsURLs)
   const [habitatMapLevels, setHabitatMapLevels] = useState<HabitatMapLevel[]>([]);
   const [currentMapLevel, setCurrentMapLevel] = useState<HabitatMapLevel>({
     name: '',
@@ -36,6 +46,7 @@ function App() {
       console.log(data)
       setHabitatMapLevels(data);
     })
+    console.log(bad_data, "bad_data");
   }, []);
 
   const RunGISProcess = () => {
@@ -80,63 +91,7 @@ function App() {
       </div>
       <div className='flex flex-row w-full h-full'>
         <div className='flex h-full w-96 flex-col space-y-4 p-4'>
-
-          <div className="flex font-bold text-xl">Levels</div>
-          <div className='flex flex-col space-y-2'>
-            {habitatMapLevels.map((level) => {
-              return (
-                <div className='flex flex-row justify-between items-center bg-slate-200 p-2 rounded-md'>
-                  <div className='flex flex-col'>
-                    <div className='font-bold'>{level.name}</div>
-                    <div className='text-sm'>{level.centerPoint[0]}, {level.centerPoint[1]}</div>
-                  </div>
-                  <button onClick={()=>{
-                    setCurrentMapLevel(level);
-                  }} className='bg-blue-500 text-white p-2 rounded-md'>View</button>
-                </div>
-              )
-            })}
-          </div>
-
-
-          <div className="flex font-bold text-xl">Level Configuration</div>
-          <div className="flex flex-col">
-            <div className="flex font-bold">Level Name</div>
-            <div className='flex flex-row justify-between items-center py-2'>  
-              <input className='w-full bg-slate-200 p-2' type='text' value={currentMapLevel.name} onChange={(e) =>
-                setCurrentMapLevel({
-                  ...currentMapLevel,
-                  name: e.target.value
-                })
-              } />
-            </div>
-          </div>
-          <div className="flex flex-col">
-            <div className="flex font-bold">Center Point</div>
-            <div className='flex flex-row justify-between items-center'>
-              <div className="">{currentMapLevel.centerPoint[0]}, {currentMapLevel.centerPoint[1]}</div>
-              <button onClick={() => setMoveBox(!moveBox)} className={(moveBox ? 'bg-blue-500' : 'bg-slate-500') + ' text-white p-2 ml-auto p-2 flex items-center justify-center rounded-md'}>
-                {moveBox ? <HiLockOpen className='w-8 h-8'/> : <HiLockClosed className='w-8 h-8'/>}
-              </button>
-
-            </div>
-          </div>
-
-          <div className="flex flex-col">
-            <div className="flex font-bold">Bounding Box Height (°)</div>
-            <div className='flex flex-row justify-between items-center py-2'>
-              <input className='w-20 bg-slate-200 p-2' type='number' value={currentMapLevel.boundHeight} onChange={(e) =>
-                setCurrentMapLevel({
-                  ...currentMapLevel,
-                  boundHeight: parseFloat(e.target.value)
-                })
-              }/>
-              <div className='flex'>({currentMapLevel.boundHeight * 69} mi)</div>
-            </div>
-          </div>
-          <div className="flex flex-col">
-              <button onClick={RunGISProcess} className='bg-blue-500 text-white p-2 rounded-md'>Run GIS Process</button>
-          </div>
+          <LevelList levels={habitatMapLevels} setCurrentMapLevel={setCurrentMapLevel} />
         </div>
         <MapContainer className='bg-slate-100' style={{height: 'calc(100vh - 4rem)',width: '100%'}}
         center={currentMapLevel.centerPoint as LatLngExpression } zoom={13} scrollWheelZoom={true}>
@@ -148,8 +103,9 @@ function App() {
                 }
               }}  
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            url={baseMapsURLs[baseMap as keyof typeof baseMapsURLs]}
           />
+
           <LocationFinderDummy />
           {habitatMapLevels.map((level) => {
             return (
@@ -170,8 +126,27 @@ function App() {
             <Popup>
               A pretty CSS3 popup. <br /> Easily customizable.
             </Popup>
-          </Marker> 
+          </Marker>
+          {/* @ts-ignore */}
+          <GeoJSON style={{"color": "#343434", "weight": 1, "opacity": 0.95}} data={bad_data} />
         </MapContainer>
+        <div className='fixed w-96 p-4 bg-white ' style={{top:'4rem',right:0,zIndex:9999}}>
+        <LevelConfig level={currentMapLevel} setLevel={setCurrentMapLevel} moveBox={moveBox} setMoveBox={setMoveBox} RunGISProcess={RunGISProcess} />
+        </div>
+        <div className="fixed w-96 p-4 bg-white" style={{bottom:0,right:0,zIndex:9999}}>
+          <div className="flex flex-col">
+            <div className="flex font-bold text-xl">Base Maps</div>
+            <select onChange={(e) => {
+                setBaseMap(e.target.value);
+            }} className='w-full bg-slate-200 p-2'>
+              {Object.keys(baseMapsURLs).map((key) => {
+                return (
+                  <option value={key}>{key}</option>
+                )
+              })}
+            </select>
+          </div>
+          </div>
       </div>
       
 

@@ -125,15 +125,25 @@ def process_data():
         precip_raster = rasterize_layer(soils_gdf, 'map_r', resolution)
         temp_raster = rasterize_layer(soils_gdf, 'airtempa_r', resolution)
         soil_raster = rasterize_layer(soils_gdf, 'taxorder', resolution, constants['soil_type_mapping'])
-        water_raster = rasterize_layer(water_gdf, 'qa', resolution)
+        water_raster = rasterize_layer(water_gdf, 'water', resolution)
         print("Rasterization complete")
 
-        print_raster(dem_raster, 'dem', level_path)
-        print_raster(precip_raster, 'precip', level_path)
-        print_raster(temp_raster, 'temp', level_path)
+        min, max = print_raster(dem_raster, 'dem', level_path)
+        metadata['dem'] = { 'min': min, 'max': max }
+        min, max = print_raster(precip_raster, 'precip', level_path)
+        metadata['precip'] = { 'min': min, 'max': max }
+        min, max = print_raster(temp_raster, 'temp', level_path)
+        metadata['temp'] = { 'min': min, 'max': max }
         print_raster(soil_raster, 'soil', level_path)
-        print_raster(water_raster, 'water', level_path)
+        min, max = print_raster(water_raster, 'water', level_path)
+        metadata['water'] = { 'min': min, 'max': max }
         print ("Total time: {}".format(time.time() - start_time))
+        metadata['hasBeenProcessed'] = True
+        print(metadata)
+        with open(metadata_path, 'w') as f:
+            json.dump(metadata,f,indent=4)
+        return jsonify(metadata)
+    
     response = jsonify({'some': 'data'})
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response

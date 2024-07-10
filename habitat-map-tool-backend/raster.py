@@ -17,7 +17,7 @@ def normalize_raster(raster_data):
     else:
         raster_data_normalized = (raster_data - raster_min) / (raster_max - raster_min)
     raster_data_normalized = (raster_data_normalized * 255).astype(np.uint8)
-    return raster_data_normalized
+    return raster_data_normalized, raster_min.item(), raster_max.item()
 
 def rasterize_layer(gdf, layer_name, resolution, attribute_mapping = None):
     xmin, ymin, xmax, ymax = gdf.total_bounds
@@ -53,8 +53,9 @@ def rasterize_layer(gdf, layer_name, resolution, attribute_mapping = None):
     return raster_data
 
 def print_raster(raster_data, title, output_dir):
-    normalized_raster = normalize_raster(raster_data)
+    normalized_raster, raster_min, raster_max = normalize_raster(raster_data)
     
     plt.imsave('{}/{}.png'.format(output_dir, title), normalized_raster, cmap='gray', vmin=0, vmax=255)
 
     print("Successfully created raster: {}".format(title))
+    return raster_min, raster_max

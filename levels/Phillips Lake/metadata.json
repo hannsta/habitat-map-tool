@@ -1,0 +1,26 @@
+{
+    "name": "Phillips Lake",
+    "id": "Phillips Lake",
+    "centerPoint": [
+        44.75648588056624,
+        -118.0114707393388
+    ],
+    "boundHeight": 0.1,
+    "hasBeenProcessed": true,
+    "dem": {
+        "min": 1019.4407958984375,
+        "max": 2770.738037109375
+    },
+    "precip": {
+        "min": 267.0,
+        "max": 1391.0
+    },
+    "temp": {
+        "min": 0.0,
+        "max": 10.0
+    },
+    "water": {
+        "min": 0.0,
+        "max": 122.60320281982422
+    }
+}

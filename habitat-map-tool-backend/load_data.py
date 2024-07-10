@@ -95,6 +95,7 @@ class DataService:
         
         eromma_df = self.eromma_df[['nhdplusid', 'qa']]
         bounding_box_gdf = bounding_box.to_crs(self.flowlines_gdf.crs)
+        
         flowlines_gdf = gpd.overlay(self.flowlines_gdf, bounding_box_gdf, how='intersection')
         waterbodies_gdf = gpd.overlay(self.waterbodies_gdf, bounding_box_gdf, how='intersection')
         print("Filtered data for bounding box {}".format(get_elapsed_time()))
@@ -104,14 +105,14 @@ class DataService:
 
 
         flowlines_gdf = flowlines_gdf.to_crs(crs=3857)
-        waterbodies_gdf = waterbodies_gdf.to_crs(MAIN_CRS)
         flowlines_gdf['buffer'] = .002
         buffered_flowlines_gdf = flowlines_gdf.copy()
         buffered_flowlines_gdf['geometry'] = flowlines_gdf.buffer(buffered_flowlines_gdf['buffer'])
         print("Buffered Flowlines {}".format(get_elapsed_time()))
     
         buffered_flowlines_gdf = buffered_flowlines_gdf.to_crs(MAIN_CRS)
-    
+        waterbodies_gdf = waterbodies_gdf.to_crs(MAIN_CRS)
+
     
         # Combine the buffered flowlines with the waterbodies polygons
         combined_gdf = gpd.GeoDataFrame(pd.concat([buffered_flowlines_gdf, waterbodies_gdf], ignore_index=True))
