@@ -1,0 +1,26 @@
+{
+    "name": "Coos Bay",
+    "id": "Coos Bay",
+    "centerPoint": [
+        43.379137582554996,
+        -124.24058498657087
+    ],
+    "boundHeight": 0.1,
+    "hasBeenProcessed": true,
+    "dem": {
+        "min": -5.025671005249023,
+        "max": 418.5179443359375
+    },
+    "precip": {
+        "min": 1143.0,
+        "max": 2286.0
+    },
+    "temp": {
+        "min": 10.0,
+        "max": 13.0
+    },
+    "water": {
+        "min": 1.0,
+        "max": 1.0
+    }
+}
