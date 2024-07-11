@@ -52,18 +52,17 @@ def rasterize_layer(gdf, layer_name, resolution, attribute_mapping = None):
         )
         raster_data = np.where(np.isnan(raster_data), burned, raster_data)
     print("Successfully rasterized layer: {} {}".format(layer_name, get_elapsed_time()))
-    return raster_data
+    return raster_data, transform
 
-def print_raster(raster_data, title, output_dir):
+def print_raster(raster_data, src_transform, title, output_dir):
     # Define the target CRS
     target_crs = 'EPSG:32610'
     src_crs='EPSG:4326'
     # Create the source transform if not provided
-    if src_transform is None:
-        src_transform = from_origin(0, 0, 1, 1)  # Assuming a default transform
+    #src_transform = from_origin(0, 0, 1, 1)  # Assuming a default transform
 
     # Create a temporary file to store the reprojected raster
-    temp_raster = '/tmp/temp_raster.tif'
+    temp_raster = './tmp/temp_raster.tif'
     
     # Save the input numpy array to a temporary raster file
     with rasterio.open(
@@ -79,7 +78,7 @@ def print_raster(raster_data, title, output_dir):
         dst.write(raster_data, 1)
     
     # Reproject the raster
-    reprojected_raster = '/tmp/reprojected_raster.tif'
+    reprojected_raster = './tmp/reprojected_raster.tif'
     with rasterio.open(temp_raster) as src:
         transform, width, height = calculate_default_transform(
             src.crs, target_crs, src.width, src.height, *src.bounds)

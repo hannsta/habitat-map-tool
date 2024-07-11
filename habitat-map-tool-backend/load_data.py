@@ -89,7 +89,7 @@ class DataService:
             num_threads=1
         )
         print("DEM data reprojected. {}".format(get_elapsed_time()))
-        return dem_data
+        return dem_data, dst_transform
 
     def load_water_data(self, bounding_box):
         

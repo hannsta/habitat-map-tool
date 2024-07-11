@@ -117,25 +117,25 @@ def process_data():
         print("Water data loaded")
         
         # DEM (already rasterized)
-        dem_raster = data_service.load_dem_data(bounding_box, resolution)
+        dem_raster, dem_transform = data_service.load_dem_data(bounding_box, resolution)
         print("DEM data loaded")
 
 
 
-        precip_raster = rasterize_layer(soils_gdf, 'map_r', resolution)
-        temp_raster = rasterize_layer(soils_gdf, 'airtempa_r', resolution)
-        soil_raster = rasterize_layer(soils_gdf, 'taxorder', resolution, constants['soil_type_mapping'])
-        water_raster = rasterize_layer(water_gdf, 'water', resolution)
+        precip_raster, precip_transform = rasterize_layer(soils_gdf, 'map_r', resolution)
+        temp_raster, temp_transform = rasterize_layer(soils_gdf, 'airtempa_r', resolution)
+        soil_raster, soil_transform = rasterize_layer(soils_gdf, 'taxorder', resolution, constants['soil_type_mapping'])
+        water_raster, water_transform = rasterize_layer(water_gdf, 'water', resolution)
         print("Rasterization complete")
 
-        min, max = print_raster(dem_raster, 'dem', level_path)
+        min, max = print_raster(dem_raster, dem_transform, 'dem', level_path)
         metadata['dem'] = { 'min': min, 'max': max }
-        min, max = print_raster(precip_raster, 'precip', level_path)
+        min, max = print_raster(precip_raster, precip_transform, 'precip', level_path)
         metadata['precip'] = { 'min': min, 'max': max }
-        min, max = print_raster(temp_raster, 'temp', level_path)
+        min, max = print_raster(temp_raster, temp_transform, 'temp', level_path)
         metadata['temp'] = { 'min': min, 'max': max }
-        print_raster(soil_raster, 'soil', level_path)
-        min, max = print_raster(water_raster, 'water', level_path)
+        print_raster(soil_raster,soil_transform, 'soil', level_path)
+        min, max = print_raster(water_raster, water_transform, 'water', level_path)
         metadata['water'] = { 'min': min, 'max': max }
         print ("Total time: {}".format(time.time() - start_time))
         metadata['hasBeenProcessed'] = True

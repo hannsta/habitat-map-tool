@@ -1,0 +1,26 @@
+{
+    "name": "test",
+    "id": "test",
+    "centerPoint": [
+        43.63555,
+        -123.564
+    ],
+    "boundHeight": 0.1,
+    "hasBeenProcessed": true,
+    "dem": {
+        "min": 0.0,
+        "max": 504.40985107421875
+    },
+    "precip": {
+        "min": 0.0,
+        "max": 2286.0
+    },
+    "temp": {
+        "min": 0.0,
+        "max": 11.0
+    },
+    "water": {
+        "min": 0.0,
+        "max": 1.0
+    }
+}
