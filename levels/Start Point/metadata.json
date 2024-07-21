@@ -1,0 +1,26 @@
+{
+    "name": "Start Point",
+    "id": "Start Point",
+    "centerPoint": [
+        43.59580863402628,
+        -123.55603281624954
+    ],
+    "boundHeight": 0.1,
+    "hasBeenProcessed": true,
+    "dem": {
+        "min": 0.0,
+        "max": 785.1246948242188
+    },
+    "precip": {
+        "min": 0.0,
+        "max": 2286.0
+    },
+    "temp": {
+        "min": 0.0,
+        "max": 12.0
+    },
+    "water": {
+        "min": 0.0,
+        "max": 1.0
+    }
+}

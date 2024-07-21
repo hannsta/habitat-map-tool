@@ -104,8 +104,12 @@ def print_raster(raster_data, src_transform, title, output_dir):
     # Load the reprojected raster
     with rasterio.open(reprojected_raster) as reprojected_src:
         reprojected_data = reprojected_src.read(1)
-        normalized_raster, raster_min, raster_max = normalize_raster(reprojected_data)
-
+        if (title != 'soil'):
+            normalized_raster, raster_min, raster_max = normalize_raster(reprojected_data)
+        else:
+            normalized_raster = (reprojected_data * 255).astype(np.uint8)
+            raster_min = np.nanmin(reprojected_data)
+            raster_max = np.nanmax(reprojected_data)
         plt.imsave('{}/{}.png'.format(output_dir, title), normalized_raster, cmap='gray', vmin=0, vmax=255)
 
         print("Successfully created raster: {}".format(title))

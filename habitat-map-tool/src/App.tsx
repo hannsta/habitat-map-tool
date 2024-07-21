@@ -128,7 +128,7 @@ function App() {
             </Popup>
           </Marker>
           {/* @ts-ignore */}
-          <GeoJSON style={{"color": "#343434", "weight": 1, "opacity": 0.95}} data={bad_data} />
+          <GeoJSON style={{"color": "#343434", "weight": 1, "opacity": 0.95, fillOpacity:.8}} data={bad_data} />
         </MapContainer>
         <div className='fixed w-96 p-4 bg-white ' style={{top:'4rem',right:0,zIndex:9999}}>
         <LevelConfig level={currentMapLevel} setLevel={setCurrentMapLevel} moveBox={moveBox} setMoveBox={setMoveBox} RunGISProcess={RunGISProcess} />

@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, Response
 from flask_cors import CORS, cross_origin
 from raster import rasterize_layer, print_raster
+from weather import get_weather_data
 import geopandas as gpd
 from shapely.geometry import box
 from load_data import DataService
@@ -8,7 +9,8 @@ import time
 import math
 import json
 import os
-
+from scipy.ndimage import convolve
+import numpy as np
 data_path = '../data/'
 LEVELS_DIR = '../levels'
 MAIN_CRS = 'EPSG:4326'
@@ -73,6 +75,7 @@ def process_data():
     y = data['centerPoint'][0]
     height = data['boundHeight']
     name = data['name']
+    #convert boundHeight to meters
 
 
     ##check to see if the name is in the levels directory
@@ -107,7 +110,6 @@ def process_data():
         maxx = x + height / math.cos(y * math.pi/180)
         
         resolution = 15 / 111000
-
         bounding_box = gpd.GeoDataFrame({'geometry': [box(minx, miny, maxx, maxy)]}, crs=MAIN_CRS)
 
         start_time = time.time()    
@@ -127,9 +129,28 @@ def process_data():
         soil_raster, soil_transform = rasterize_layer(soils_gdf, 'taxorder', resolution, constants['soil_type_mapping'])
         water_raster, water_transform = rasterize_layer(water_gdf, 'water', resolution)
         print("Rasterization complete")
+        water_raster[dem_raster <= 0] = 1
+
+        kernel = np.ones((5,5), dtype=int)
+        # Convolve the water layer with the kernel to count surrounding water pixels
+        water_count = convolve(water_raster, kernel, mode='constant', cval=0)
+
+        def adjust_height(water_count, base_depth=0, max_depth=80, max_count=25):
+                        
+            scaling_factor = (water_count * water_count) / (max_count * max_count)
+            return np.clip(scaling_factor * (max_depth - base_depth) + base_depth, 0, max_depth)
+
+
+        # Apply the adjustment
+        depth_adjustment = adjust_height(water_count)
+        adjusted_dem = dem_raster.copy()
+        adjusted_dem[water_raster == 1] -= depth_adjustment[water_raster == 1]
+
 
         min, max = print_raster(dem_raster, dem_transform, 'dem', level_path)
         metadata['dem'] = { 'min': min, 'max': max }
+        min, max = print_raster(adjusted_dem, dem_transform, 'adjusted_dem', level_path)
+        metadata['adjustedDem'] = { 'min': min, 'max': max }
         min, max = print_raster(precip_raster, precip_transform, 'precip', level_path)
         metadata['precip'] = { 'min': min, 'max': max }
         min, max = print_raster(temp_raster, temp_transform, 'temp', level_path)
@@ -137,8 +158,17 @@ def process_data():
         print_raster(soil_raster,soil_transform, 'soil', level_path)
         min, max = print_raster(water_raster, water_transform, 'water', level_path)
         metadata['water'] = { 'min': min, 'max': max }
+        
+        
+        temp_data, precip_data = get_weather_data([minx, miny, maxx, maxy])
+        metadata['tempData'] = temp_data
+        metadata['precipData'] = precip_data
+        
         print ("Total time: {}".format(time.time() - start_time))
         metadata['hasBeenProcessed'] = True
+
+
+
         print(metadata)
         with open(metadata_path, 'w') as f:
             json.dump(metadata,f,indent=4)
