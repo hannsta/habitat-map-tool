@@ -9,7 +9,8 @@ import time
 import math
 import json
 import os
-from scipy.ndimage import convolve
+from scipy.ndimage import binary_dilation
+from scipy.ndimage import convolve, distance_transform_edt
 import numpy as np
 data_path = '../data/'
 LEVELS_DIR = '../levels'
@@ -103,13 +104,14 @@ def process_data():
     start_time = start
     with open('../constants.json') as f:
         constants = json.load(f)['constants']
-
+        
         miny = y - height
         maxy = y + height
         minx = x - height / math.cos(y * math.pi/180)
         maxx = x + height / math.cos(y * math.pi/180)
         
         resolution = 15 / 111000
+        print("Bounding box: {} {} {} {}".format(minx, miny, maxx, maxy))
         bounding_box = gpd.GeoDataFrame({'geometry': [box(minx, miny, maxx, maxy)]}, crs=MAIN_CRS)
 
         start_time = time.time()    
@@ -131,11 +133,11 @@ def process_data():
         print("Rasterization complete")
         water_raster[dem_raster <= 0] = 1
 
-        kernel = np.ones((5,5), dtype=int)
+        kernel = np.ones((3,3), dtype=int)
         # Convolve the water layer with the kernel to count surrounding water pixels
         water_count = convolve(water_raster, kernel, mode='constant', cval=0)
 
-        def adjust_height(water_count, base_depth=0, max_depth=80, max_count=25):
+        def adjust_height(water_count, base_depth=0, max_depth=20, max_count=9):
                         
             scaling_factor = (water_count * water_count) / (max_count * max_count)
             return np.clip(scaling_factor * (max_depth - base_depth) + base_depth, 0, max_depth)
@@ -146,6 +148,43 @@ def process_data():
         adjusted_dem = dem_raster.copy()
         adjusted_dem[water_raster == 1] -= depth_adjustment[water_raster == 1]
 
+
+
+        def buffer_raster_with_gradient(water_raster, buffer_distance, pixel_size):
+            buffer_size = int(buffer_distance / pixel_size)
+            water_mask = water_raster == 1
+            distance = distance_transform_edt(~water_mask)
+            gradient = np.clip(1 - distance / buffer_size, 0, 1)
+            buffered_raster = np.where(water_mask, 1, gradient)
+            water_raster[:] = buffered_raster
+
+        def buffer_flood_zone_raster(water_raster, dem_raster, buffer_distance, pixel_size, max_elevation_diff):
+            buffer_size = int(buffer_distance / pixel_size)
+            water_mask = water_raster == 1
+            
+            # Compute the distance transform
+            distance = distance_transform_edt(~water_mask)
+            
+            # Compute the elevation gradient
+            elevation_diff = np.abs(dem_raster - np.min(dem_raster[water_mask]))
+            elevation_factor = np.clip(elevation_diff / max_elevation_diff, 0, 1)
+            
+            # Combine distance and elevation to create a gradient
+            gradient = np.clip(1 - (distance / buffer_size) * elevation_factor, 0, 1)
+            buffered_raster = np.where(water_mask, 1, gradient)
+            
+            return buffered_raster
+
+        # Example usage
+        # Assuming water_raster is already defined and contains your raster data
+        buffer_distance = 3  # Buffer distance in meters
+        flood_buffer_distance = 5
+        pixel_size = 1  # Assuming each pixel represents 1 meter (adjust if needed)
+        max_elevation_diff = 50
+
+        # Update the water_raster in place
+        flood_raster = buffer_flood_zone_raster(water_raster, dem_raster, flood_buffer_distance, pixel_size, max_elevation_diff)
+        buffer_raster_with_gradient(water_raster, buffer_distance, pixel_size)
 
         min, max = print_raster(dem_raster, dem_transform, 'dem', level_path)
         metadata['dem'] = { 'min': min, 'max': max }
@@ -158,7 +197,8 @@ def process_data():
         print_raster(soil_raster,soil_transform, 'soil', level_path)
         min, max = print_raster(water_raster, water_transform, 'water', level_path)
         metadata['water'] = { 'min': min, 'max': max }
-        
+        min, max = print_raster(flood_raster, water_transform, 'flood', level_path)
+        metadata['flood'] = { 'min': min, 'max': max }
         
         temp_data, precip_data = get_weather_data([minx, miny, maxx, maxy])
         metadata['tempData'] = temp_data

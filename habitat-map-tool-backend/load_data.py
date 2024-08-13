@@ -93,7 +93,7 @@ class DataService:
 
     def load_water_data(self, bounding_box):
         
-        eromma_df = self.eromma_df[['nhdplusid', 'qa']]
+        eromma_df = self.eromma_df[['nhdplusid', 'qe']]
         bounding_box_gdf = bounding_box.to_crs(self.flowlines_gdf.crs)
         
         flowlines_gdf = gpd.overlay(self.flowlines_gdf, bounding_box_gdf, how='intersection')
@@ -105,7 +105,7 @@ class DataService:
 
 
         flowlines_gdf = flowlines_gdf.to_crs(crs=3857)
-        flowlines_gdf['buffer'] = .002
+        flowlines_gdf['buffer'] = .002 #(flowlines_gdf['qe'] / 3000) * .002
         buffered_flowlines_gdf = flowlines_gdf.copy()
         buffered_flowlines_gdf['geometry'] = flowlines_gdf.buffer(buffered_flowlines_gdf['buffer'])
         print("Buffered Flowlines {}".format(get_elapsed_time()))
