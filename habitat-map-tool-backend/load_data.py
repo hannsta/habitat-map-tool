@@ -29,16 +29,15 @@ class DataService:
         self.eromma_df = None
         self.data_loaded = False
         self.chorizon_df = None
+        self.fragment_df = None
 
 
     def load_base_data(self):
         # Connect to the SQLite database and load relevant tables
         conn = sqlite3.connect(SOILDB_PATH)
         self.component_df = pd.read_sql_query("SELECT mukey, cokey, taxorder, map_l, map_r, map_h, airtempa_l, airtempa_r, airtempa_h FROM component", conn)
-        self.chorizon_df = pd.read_sql_query(
-            "SELECT cokey, hzname, sandtotal_r, silttotal_r, claytotal_r, hzdept_r, hzdepb_r FROM chorizon", conn
+        self.chorizon_df = pd.read_sql_query("""SELECT ch.cokey, ch.om_r, ch.hzname, ch.sandtotal_r, ch.silttotal_r, ch.claytotal_r, ch.hzdept_r, ch.hzdepb_r, fr.fragvol_r FROM chorizon AS ch LEFT JOIN chfrags AS fr ON ch.chkey = fr.chkey""", conn
         )
-        
         conn.close()
         print("Load tabular soil data from database {}".format(get_elapsed_time()))
 

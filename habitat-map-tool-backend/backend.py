@@ -130,6 +130,8 @@ def process_data():
         silt_raster, silt_transform = rasterize_layer(soils_gdf, 'silttotal_r', resolution)
         clay_raster, clay_transform = rasterize_layer(soils_gdf, 'claytotal_r', resolution)
         sand_raster, sand_transform = rasterize_layer(soils_gdf, 'sandtotal_r', resolution)
+        organic_raster, organic_transform = rasterize_layer(soils_gdf, 'om_r', resolution)
+        rock_raster, rock_transform = rasterize_layer(soils_gdf, 'fragvol_r', resolution)
         temp_raster, temp_transform = rasterize_layer(soils_gdf, 'airtempa_r', resolution)
         soil_raster, soil_transform = rasterize_layer(soils_gdf, 'taxorder', resolution, constants['soil_type_mapping'])
         water_raster, water_transform = rasterize_layer(water_gdf, 'water', resolution)
@@ -201,6 +203,10 @@ def process_data():
         metadata['clay'] = { 'min': min, 'max': max }
         min, max = print_raster(sand_raster, sand_transform, 'sand', level_path)
         metadata['sand'] = { 'min': min, 'max': max }
+        min, max = print_raster(organic_raster, organic_transform, 'organic', level_path)
+        metadata['organic'] = { 'min': min, 'max': max }
+        min, max = print_raster(rock_raster, rock_transform, 'rock', level_path)
+        metadata['rock'] = { 'min': min, 'max': max }
         min, max = print_raster(temp_raster, temp_transform, 'temp', level_path)
         metadata['temp'] = { 'min': min, 'max': max }
         print_raster(soil_raster,soil_transform, 'soil', level_path)
